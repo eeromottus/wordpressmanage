@@ -1,0 +1,19 @@
+---
+- hosts: restore_servers
+  vars: 
+    wp_path: "domeenid/{{ inventory_hostname }}/htdocs"
+    htdocsfiles_path: "domeenid/{{ inventory_hostname }}"
+    backup_path: "domeenid/{{ inventory_hostname }}/backup"
+
+  gather_facts: no
+  become: no
+  pre_tasks:
+
+  - name: Get current date on machine where playbook is run
+    set_fact:
+      local_date: "{{ lookup('pipe', 'date +%Y-%m-%d') }}_1"
+    delegate_to: localhost
+    run_once: true 
+  roles:
+    - role: restore_site
+  

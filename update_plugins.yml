@@ -1,0 +1,39 @@
+---
+- hosts: wordpress_servers
+#- hosts: zone_wordpress_servers
+  vars:
+    keep_files: 6
+  gather_facts: no
+  become: no
+  pre_tasks:
+  - name: Initial setup task that runs first
+    ansible.builtin.debug:
+      msg: "Running initial setup tasks before everything else."
+    tags: [ backup ]
+
+  - name: Get current date on machine where playbook is run
+    set_fact:
+      local_date: "{{ lookup('pipe', 'date +%Y-%m-%d') }}_1"
+    delegate_to: localhost
+    run_once: true 
+    tags: [ backup ]
+  roles:
+    - role: database_backup
+      tags: [ backup ]
+    - role: files_backup
+      tags: [ backup ]
+  tasks:
+    - name: Update all WordPress plugins
+      command: "wp --path={{ wp_path }} {{item}}"
+      with_items:
+        - "db check"
+        - "core update"
+        - "cache flush"  
+        - "plugin update --all"
+        - "theme update --all"
+        - "language plugin update --all"
+        - "cache flush"
+    - name: Install  WordPress plugins
+      command: "wp plugin install {{item}} --path={{ wp_path }} --activate"
+      with_items:
+        - "disable-json-api"

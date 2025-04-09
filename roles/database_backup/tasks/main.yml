@@ -1,0 +1,32 @@
+---
+# tasks file for mysql_dump
+
+- name: Get WordPress DB name
+  ansible.builtin.command: wp config get --constant=DB_NAME --path={{ wp_path }}
+  register: mysql_database
+  ignore_errors: no
+
+- name: Get WordPress DB user
+  ansible.builtin.command: wp config get --constant=DB_USER --path={{ wp_path }}
+  register: mysql_user
+  ignore_errors: no
+
+- name: Get WordPress DB password
+  ansible.builtin.command: wp config get --constant=DB_PASSWORD --path={{ wp_path }}
+  register: mysql_password
+  ignore_errors: no
+
+- name: Get WordPress DB host
+  ansible.builtin.command: wp config get --constant=DB_HOST --path={{ wp_path }}
+  register: mysql_host
+  ignore_errors: no
+
+- name: Set mysql_host based on mysql_host (veebimajutus don't connect using localhost)
+  set_fact:
+    mysql_host: >-
+      {{ '127.0.0.1' if mysql_host.stdout == 'localhost' else mysql_host.stdout }}
+
+- name: Create MySQL database dump
+  ansible.builtin.shell:
+    cmd: "mysqldump -u {{ mysql_user.stdout }} -p'{{ mysql_password.stdout }}' -h {{ mysql_host }} {{ mysql_database.stdout }} > {{ backup_path }}/database_{{ local_date }}.sql"
+  no_log: false # Prevents leaking sensitive information      

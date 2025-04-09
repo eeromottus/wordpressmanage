@@ -1,0 +1,4 @@
+---
+wp_path: "domeenid/{{ inventory_hostname }}/htdocs"
+htdocsfiles_path: "domeenid/{{ inventory_hostname }}"
+backup_path: "domeenid/{{ inventory_hostname }}/backup"

@@ -1,0 +1,50 @@
+---
+# tasks file for restore
+- name: "Backup files"
+  command: "tar  -C {{ htdocsfiles_path }} -xf {{ backup_path }}/{{ item }}_{{ local_date }}.tar"
+  with_items:
+    - "htdocs"
+
+- name: Read wp-config.php content
+  shell: cat {{ wp_path }}/wp-config.php
+  register: wp_config_content
+  tags: [ test ]
+- name: Extract DB_USER line
+  set_fact:
+    mysql_user: >-
+          {{
+            wp_config_content.stdout |
+            regex_search("define\(\s*'DB_USER'\s*,\s*'([^']+)'\s*\);", '\1')
+          }}
+  tags: [test]
+- name: Extract DB_PASSWORD line
+  set_fact:
+    mysql_password: >-
+          {{
+            wp_config_content.stdout |
+            regex_search("define\(\s*'DB_PASSWORD'\s*,\s*'([^']+)'\s*\);", '\1')
+          }}
+- name: Extract DB_HOST line
+  set_fact:
+    mysql_host: >-
+          {{
+            wp_config_content.stdout |
+            regex_search("define\(\s*'DB_HOST'\s*,\s*'([^']+)'\s*\);", '\1')
+          }}          
+- name: Extract DB_NAME line
+  set_fact:
+    mysql_database: >-
+          {{
+            wp_config_content.stdout |
+            regex_search("define\(\s*'DB_NAME'\s*,\s*'([^']+)'\s*\);", '\1')
+          }}
+- name: Display DB_NAME
+  debug:
+    msg: "DB_USER is {{ mysql_user[0] }}"
+  tags: [ test ]    
+
+
+- name: Restore from MySQL database dump
+  ansible.builtin.shell:
+    cmd: "mysql -u {{ mysql_user[0] }} -p'{{ mysql_password[0] }}' -h {{ mysql_host[0] }} {{ mysql_database[0] }} < {{ backup_path }}/database_{{ local_date }}.sql"
+  no_log: false # Prevents leaking sensitive information      

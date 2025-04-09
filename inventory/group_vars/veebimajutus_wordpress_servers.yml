@@ -1,0 +1,5 @@
+---
+wp_path: "htdocs"
+htdocsfiles_path: "."
+backup_path: "backup"
+DB_HOST: "127.0.0.1"
