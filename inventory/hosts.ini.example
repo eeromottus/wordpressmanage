@@ -1,0 +1,11 @@
+[defaults]
+[restore_servers]
+www.domeen1.ee ansible_ssh_host=domeen1.ee ansible_user=virt1111 ansible_python_interpreter=/usr/bin/python3.13
+[zone_wordpress_servers]
+www.domeen1.ee ansible_ssh_host=domeen1.ee ansible_user=virt1111 ansible_python_interpreter=/usr/bin/python3.13
+www.domeen1.ee ansible_ssh_host=domeen2.ee ansible_user=virt2222 ansible_python_interpreter=/usr/bin/python3.13
+[veebimajutus_wordpress_servers]
+www.domeen1.ee ansible_ssh_host=domeen3.ee ansible_user=vhost33333ssh ansible_port=1022 ansible_python_interpreter=/usr/bin/python3.14
+[wordpress_servers:children]
+zone_wordpress_servers
+veebimajutus_wordpress_servers
