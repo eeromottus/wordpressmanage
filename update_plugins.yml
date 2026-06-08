@@ -45,3 +45,7 @@
       command: "wp plugin install {{item}} --path={{ wp_path }} --activate"
       with_items:
         - "disable-json-api"
+    - name: Clean cache finally
+      command: "wp --path={{ wp_path }} {{item}}"
+      with_items:
+        - "cache flush"
