@@ -3,6 +3,9 @@
 #- hosts: zone_wordpress_servers
   vars:
     keep_files: 6
+    excluded_plugins:
+      - elementor-pro
+      - vm_wp  
   gather_facts: no
   become: no
   pre_tasks:
@@ -23,16 +26,21 @@
     - role: files_backup
       tags: [ backup ]
   tasks:
-    - name: Update all WordPress plugins
+    - name: Update all WordPress except plugins
       command: "wp --path={{ wp_path }} {{item}}"
       with_items:
         - "db check"
         - "core update"
         - "cache flush"  
-        - "plugin update --all"
+#       - "plugin update --all"
         - "theme update --all"
         - "language plugin update --all"
         - "cache flush"
+    - name: Update all plugins except excluded plugins
+      shell: >
+        wp --path={{ wp_path }} plugin list --field=name |
+        grep -Ev '^({{ excluded_plugins | join("|") }})$' |
+        xargs wp --path={{ wp_path }} plugin update
     - name: Install  WordPress plugins
       command: "wp plugin install {{item}} --path={{ wp_path }} --activate"
       with_items:
