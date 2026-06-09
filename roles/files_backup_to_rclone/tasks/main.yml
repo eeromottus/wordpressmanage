@@ -1,0 +1,39 @@
+---
+# tasks file for roles/files_backup
+- name: Stream backup to Google Drive
+  delegate_to: localhost
+  shell: |
+    set -o pipefail
+    ssh -p {{ ansible_port }} {{ ansible_user }}@{{ ansible_ssh_host }} \
+    "tar --exclude 'wp-content/cache/*' -C {{ wp_path }} -czf - ." | \
+    rclone rcat google:backups/{{ inventory_hostname }}/htdocs_{{ local_date }}.tar.gz
+  args:
+    executable: /bin/bash
+# delete older files direcory
+- name: Get backup files from Google Drive
+  delegate_to: localhost
+  command:
+    argv:
+      - rclone
+      - lsjson
+      - "google:backups/{{ inventory_hostname }}"
+      - "--files-only"
+  register: rclone_files
+  changed_when: false
+
+- name: Sort files by modification time, newest first
+  set_fact:
+    sorted_files: >-
+      {{
+        rclone_files.stdout
+        | from_json
+        | sort(attribute='ModTime', reverse=true)
+      }}
+
+- name: Delete old backup files, keep newest {{ keep_files }}
+  delegate_to: localhost
+  command: >
+    rclone deletefile
+    google:backups/{{ inventory_hostname }}/{{ item.Name }} --drive-use-trash=false
+  loop: "{{ sorted_files[keep_files:] }}"
+  when: sorted_files | length > keep_files

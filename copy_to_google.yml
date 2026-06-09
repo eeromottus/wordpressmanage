@@ -1,0 +1,28 @@
+---
+- hosts: wordpress_servers
+  serial: 1
+#- hosts: zone_wordpress_servers
+  vars:
+    keep_files: 4
+    excluded_plugins:
+      - elementor-pro
+      - vm_wp  
+  gather_facts: no
+  become: no
+  pre_tasks:
+  - name: Initial setup task that runs first
+    ansible.builtin.debug:
+      msg: "Running initial setup tasks before everything else."
+    tags: [ backup ]
+
+  - name: Get current date on machine where playbook is run
+    set_fact:
+      local_date: "{{ lookup('pipe', 'date +%Y-%m-%d') }}_2"
+    delegate_to: localhost
+    run_once: true 
+    tags: [ backup ]
+  roles:
+    - role: database_backup_to_rclone
+      tags: [ backup ]
+    - role: files_backup_to_rclone
+      tags: [ backup ]

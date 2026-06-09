@@ -1,0 +1,38 @@
+---
+# tasks file for mysql_dump
+
+- name: Get WordPress DB name
+  ansible.builtin.command: wp config get --constant=DB_NAME --path={{ wp_path }}
+  register: mysql_database
+  ignore_errors: no
+
+- name: Get WordPress DB user
+  ansible.builtin.command: wp config get --constant=DB_USER --path={{ wp_path }}
+  register: mysql_user
+  ignore_errors: no
+
+- name: Get WordPress DB password
+  ansible.builtin.command: wp config get --constant=DB_PASSWORD --path={{ wp_path }}
+  register: mysql_password
+  ignore_errors: no
+
+- name: Get WordPress DB host
+  ansible.builtin.command: wp config get --constant=DB_HOST --path={{ wp_path }}
+  register: mysql_host
+  ignore_errors: no
+
+- name: Set mysql_host based on mysql_host (veebimajutus don't connect using localhost)
+  set_fact:
+    mysql_host: >-
+      {{ '127.0.0.1' if mysql_host.stdout == 'localhost' else mysql_host.stdout }}
+- name: Stream MySQL dump to Google Drive
+  delegate_to: localhost
+  shell: |
+    set -o pipefail
+    ssh -p {{ ansible_port }} {{ ansible_user }}@{{ ansible_ssh_host }} \
+    "mysqldump -u {{ mysql_user.stdout }} -p'{{ mysql_password.stdout }}' -h {{ mysql_host }} {{ mysql_database.stdout }}" \
+    | gzip \
+    | rclone rcat google:backups/{{ inventory_hostname }}/data_{{ local_date }}.sql.gz
+  args:
+    executable: /bin/bash
+

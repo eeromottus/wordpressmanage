@@ -1,0 +1,58 @@
+---
+- hosts: wordpress_servers
+  serial: 1
+#- hosts: zone_wordpress_servers
+  vars:
+    keep_files: 4
+    excluded_plugins:
+      - elementor-pro
+      - vm_wp
+    wp_options:
+      updraft_dir: "../../updraft"
+      blogdescription: ""  
+  gather_facts: no
+  become: no
+  pre_tasks:
+  - name: Initial setup task that runs first
+    ansible.builtin.debug:
+      msg: "Running initial setup tasks before everything else."
+    tags: [ backup ]
+
+  - name: Get current date on machine where playbook is run
+    set_fact:
+      local_date: "{{ lookup('pipe', 'date +%Y-%m-%d') }}_2"
+    delegate_to: localhost
+    run_once: true 
+    tags: [ backup ]
+  roles:
+#    - role: database_backup_to_rclone
+#      tags: [ backup ]
+#    - role: files_backup_to_rclone
+#      tags: [ backup ]
+
+  tasks:
+    - name: Create updraft directory
+      ansible.builtin.file:
+        path: "{{ wp_path }}/wp-includes/{{ wp_options.updraft_dir }}"
+        state: directory
+        mode: "0755"
+      when:
+        - wp_options is defined
+        - wp_options.updraft_dir is defined
+        - wp_options.updraft_dir | length > 0
+
+    - name: Update WordPress options
+      ansible.builtin.command:
+        argv:
+          - wp
+          - option
+          - update
+          - "{{ item.key }}"
+          - "{{ item.value }}"
+      args:
+        chdir: "{{ wp_path }}"
+      loop: "{{ wp_options | dict2items }}"
+      when:
+        - item.value is not none
+        - item.value | string | length > 0
+    

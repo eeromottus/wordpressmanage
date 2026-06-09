@@ -1,0 +1,47 @@
+---
+- hosts: wordpress_servers
+#- hosts: zone_wordpress_servers
+  vars:
+    keep_files: 6
+    excluded_plugins:
+      - elementor-pro
+      - vm_wp  
+  gather_facts: no
+  become: no
+  pre_tasks:
+  - name: Initial setup task that runs first
+    ansible.builtin.debug:
+      msg: "Running initial setup tasks before everything else."
+    tags: [ backup ]
+
+  - name: Get current date on machine where playbook is run
+    set_fact:
+      local_date: "{{ lookup('pipe', 'date +%Y-%m-%d') }}_1"
+    delegate_to: localhost
+    run_once: true 
+    tags: [ backup ]
+  roles:
+#    - role: database_backup
+#      tags: [ backup ]
+#    - role: files_backup
+#      tags: [ backup ]
+  tasks:
+    - name: Create mu-plugins directory
+      file:
+        path: "{{ wp_path }}/wp-content/mu-plugins"
+        state: directory
+        mode: '0755'
+    - name: Add Ansible footer message
+      copy:
+       dest: "{{ wp_path }}/wp-content/mu-plugins/ansible-footer.php"
+       content: |
+         <?php
+         /*
+         * Plugin Name: Ansible Footer
+         */
+
+         add_action('wp_footer', function () {
+           echo '<div style="text-align:center;padding:10px;font-size:12px;">
+                Managed by Ansible
+                </div>';
+         });
