@@ -10,7 +10,7 @@ Migrate WordPress sites between servers
 
 SSH access to the target server is required.
 
-The rclone package must be installed and configured to connect to a cloud storage service. Rclone supports more than 70 storage providers.
+The rclone package must be installed and configured to connect to a cloud storage service if you want to store backups in the cloud. Rclone supports more than 70 storage providers.
 
 The scripts do not contain passwords. Database connection parameters are detected automatically from the WordPress configuration.
 Web service host based variables are group variables: inventory/group_vars/
