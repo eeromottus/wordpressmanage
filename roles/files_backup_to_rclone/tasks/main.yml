@@ -6,7 +6,7 @@
     set -o pipefail
     ssh -p {{ ansible_port }} {{ ansible_user }}@{{ ansible_ssh_host }} \
     "tar --exclude 'wp-content/cache/*' -C {{ wp_path }} -czf - ." | \
-    rclone rcat google:backups/{{ inventory_hostname }}/htdocs_{{ local_date }}.tar.gz
+    rclone rcat {{ rclone_name }}:{{ rclone_backup_directory }}/{{ inventory_hostname }}/htdocs_{{ local_date }}.tar.gz
   args:
     executable: /bin/bash
 # delete older files direcory
@@ -16,7 +16,7 @@
     argv:
       - rclone
       - lsjson
-      - "google:backups/{{ inventory_hostname }}"
+      - "{{ rclone_name }}:{{ rclone_backup_directory }}/{{ inventory_hostname }}"
       - "--files-only"
   register: rclone_files
   changed_when: false

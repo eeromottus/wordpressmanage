@@ -18,8 +18,13 @@ Web service host based variables are group variables: inventory/group_vars/
 example :
 ansible-playbook -i inventory/hosts.ini update_plugins.yml --tags "backup"
 
-Yes, the scripts still need improvement and some additional setup.
+A little hint: if you are using WSL on Windows to run Ansible locally, you can copy files directly from cloud storage to Windows using rclone:
 
+rclone copy google:backups /mnt/c/Backups/ --progress
+
+This command copies files from the google:backups remote to the C:\Backups directory on Windows.
+
+Yes, the scripts still need improvement and some additional setup.
 Please let me know if you find them useful or if you have any suggestions for improvement. Your feedback is greatly appreciated.
 
 

@@ -3,10 +3,9 @@
   serial: 1
 #- hosts: zone_wordpress_servers
   vars:
+    rclone_name: "google"
+    rclone_backup_directory: "backups"
     keep_files: 4
-    excluded_plugins:
-      - elementor-pro
-      - vm_wp  
   gather_facts: no
   become: no
   pre_tasks:
@@ -17,7 +16,7 @@
 
   - name: Get current date on machine where playbook is run
     set_fact:
-      local_date: "{{ lookup('pipe', 'date +%Y-%m-%d') }}_2"
+      local_date: "{{ lookup('pipe', 'date +%Y-%m-%d') }}_1"
     delegate_to: localhost
     run_once: true 
     tags: [ backup ]

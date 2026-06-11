@@ -32,7 +32,7 @@
     ssh -p {{ ansible_port }} {{ ansible_user }}@{{ ansible_ssh_host }} \
     "mysqldump -u {{ mysql_user.stdout }} -p'{{ mysql_password.stdout }}' -h {{ mysql_host }} {{ mysql_database.stdout }}" \
     | gzip \
-    | rclone rcat google:backups/{{ inventory_hostname }}/data_{{ local_date }}.sql.gz
+    | rclone rcat {{ rclone_name }}:{{ rclone_backup_directory }}/{{ inventory_hostname }}/data_{{ local_date }}.sql.gz
   args:
     executable: /bin/bash
 
