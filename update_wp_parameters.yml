@@ -3,10 +3,7 @@
   serial: 1
 #- hosts: zone_wordpress_servers
   vars:
-    keep_files: 4
-    excluded_plugins:
-      - elementor-pro
-      - vm_wp
+    keep_files: 6
     wp_options:
       updraft_dir: "../../updraft"
       blogdescription: ""  
@@ -20,18 +17,18 @@
 
   - name: Get current date on machine where playbook is run
     set_fact:
-      local_date: "{{ lookup('pipe', 'date +%Y-%m-%d') }}_2"
+      local_date: "{{ lookup('pipe', 'date +%Y-%m-%d') }}_1"
     delegate_to: localhost
     run_once: true 
     tags: [ backup ]
   roles:
-#    - role: database_backup_to_rclone
-#      tags: [ backup ]
-#    - role: files_backup_to_rclone
-#      tags: [ backup ]
+    - role: database_backup
+      tags: [ backup ]
+    - role: files_backup
+      tags: [ backup ]
 
   tasks:
-    - name: Create updraft directory
+    - name: Create updraft directory (example if You need directory)
       ansible.builtin.file:
         path: "{{ wp_path }}/wp-includes/{{ wp_options.updraft_dir }}"
         state: directory
@@ -41,7 +38,7 @@
         - wp_options.updraft_dir is defined
         - wp_options.updraft_dir | length > 0
 
-    - name: Update WordPress options
+    - name: Update WordPress options (loop from variable wp_opions)
       ansible.builtin.command:
         argv:
           - wp
