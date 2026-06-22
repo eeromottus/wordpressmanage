@@ -5,6 +5,7 @@
     keep_files: 6
     excluded_plugins:
       - elementor-pro
+      - ansible-footer
       - vm_wp  
   gather_facts: no
   become: no
