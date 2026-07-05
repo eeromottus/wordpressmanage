@@ -6,6 +6,8 @@
     excluded_plugins:
       - elementor-pro
       - ansible-footer
+      - advanced-cache.php
+      - db.php
       - vm_wp  
   gather_facts: no
   become: no
