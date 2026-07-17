@@ -1,9 +1,23 @@
 ---
 # tasks file for roles/files_backup
-- name: "Backup files"
-  command: "tar --exclude wp-content/cache/* -C {{ htdocsfiles_path }} -cf {{ backup_path }}/{{ item }}_{{ local_date }}.tar {{ item }}"
-  with_items:
-    - "htdocs"
+- name: Backup files
+  ansible.builtin.command: >
+    tar
+    --warning=no-file-changed
+    --exclude=htdocs/wp-content/cache/*
+    --exclude=htdocs/wp-content/uploads/*/*.tmp
+    --exclude=htdocs/wp-content/debug.log
+    --exclude=htdocs/wp-content/upgrade/*
+    --exclude=htdocs/wp-content/ai1wm-backups/*
+    --exclude=htdocs/wp-content/updraft/*
+    -C {{ htdocsfiles_path }}
+    -cf {{ backup_path }}/{{ item }}_{{ local_date }}.tar
+    {{ item }}
+  loop:
+    - htdocs
+  register: tar_backup
+  failed_when: tar_backup.rc not in [0, 1]
+
 
 # deleete older files direcory
 - name: Find all files in the specified directory
